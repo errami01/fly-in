@@ -1,6 +1,7 @@
 import sys
 
 from src.parser.parser import Parser
+from src.utils.graph_debug import debug_print_graph
 
 
 def main() -> None:
@@ -17,27 +18,10 @@ def main() -> None:
 
         print("\n=== PARSE SUCCESS ===")
         print(f"Drones: {drone_count}")
-        print(f"Start: {graph.start}")
-        print(f"End: {graph.end}")
 
-        print("\n=== NODES ===")
+        debug_print_graph(graph)
 
-        for node in graph.nodes.values():
-            print(
-                f"{node.name} "
-                f"({node.x}, {node.y}) "
-                f"type={node.zone_type.value} "
-                f"capacity={node.max_drones} "
-                f"neighbors={list(node.neighbors)}"
-            )
-
-        print("\n=== EDGES ===")
-
-        for edge in graph.edges.values():
-            print(
-                f"{edge.start} <-> {edge.end} "
-                f"capacity={edge.max_link_capacity}"
-            )
+    
 
     except Exception as error:
         print(f"ERROR: {error}")
