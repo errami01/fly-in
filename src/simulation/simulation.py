@@ -37,13 +37,22 @@ class Simulation:
     def _execute_turn(self) -> None:
         movements: list[str] = []
 
+        occupancy = self._current_occupancy()
+
+        # Reservations for THIS turn
+        reservations: dict[str, int] = {}
+
         for drone in self.drones:
             if drone.delivered:
                 continue
 
-            movement = self._move_drone(drone)
+            movement = self._move_drone(
+                drone,
+                occupancy,
+                reservations,
+            )
 
-            if movement:
+            if movement is not None:
                 movements.append(movement)
 
         if movements:
@@ -53,9 +62,11 @@ class Simulation:
             )
 
     def _move_drone(
-            self,
-            drone: Drone,
-            ) -> str | None:
+        self,
+        drone: Drone,
+        occupancy: dict[str, int],
+        reservations: dict[str, int],
+    ) -> str | None:
         if drone.in_transit:
             return self._handle_transit(drone)
 
@@ -69,9 +80,24 @@ class Simulation:
         next_zone = self.path[path_index + 1]
 
         next_node = self.graph.nodes[next_zone]
+        
+        future_occupancy = (
+            occupancy.get(next_zone, 0)
+            + reservations.get(next_zone, 0)
+        )
 
+        capacity = self._zone_capacity(next_zone)
+
+        # Current drone leaves current zone this turn
+        if drone.current_zone == next_zone:
+            future_occupancy -= 1
+
+        if future_occupancy >= capacity:
+            return None
         # Restricted movement
         if next_node.zone_type == ZoneType.RESTRICTED:
+            reservations[next_zone] = (
+                reservations.get(next_zone, 0) + 1)
             drone.in_transit = True
 
             drone.transit_remaining = 1
@@ -87,7 +113,8 @@ class Simulation:
                 f"D{drone.drone_id}-"
                 f"{current_zone}-{next_zone}"
             )
-
+        
+        reservations[next_zone] = (reservations.get(next_zone, 0) + 1)
         # Normal movement
         drone.current_zone = next_zone
 
@@ -128,3 +155,31 @@ class Simulation:
         return (
             f"D{drone.drone_id}-{destination}"
         )
+
+    def _zone_capacity(self, zone_name: str) -> int:
+        if zone_name == self.graph.start:
+            return 999999
+
+        if zone_name == self.graph.end:
+            return 999999
+
+        return self.graph.nodes[zone_name].max_drones
+    
+    def _current_occupancy(self) -> dict[str, int]:
+        occupancy: dict[str, int] = {}
+
+        for drone in self.drones:
+            if drone.delivered:
+                continue
+
+            if drone.in_transit:
+                continue
+
+            occupancy.setdefault(
+                drone.current_zone,
+                0,
+            )
+
+            occupancy[drone.current_zone] += 1
+
+        return occupancy
