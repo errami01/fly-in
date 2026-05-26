@@ -29,21 +29,24 @@ def main() -> None:
         print(f"ERROR: {error}")
     
     pathfinder = Pathfinder(graph)
-    drone = Drone(
-        drone_id=1,
-        current_zone=graph.start,
+    drones = [
+        Drone(
+            drone_id=i + 1,
+            current_zone=graph.start,
         )
+        for i in range(drone_count)
+        ]
     path = pathfinder.shortest_path(
         graph.start,
         graph.end,
     )
     simulation = Simulation(
         graph=graph,
-        drone=drone,
+        drones=drones,
         path=path,
         )
     simulation.run()
-    # debug_print_path(path)
+    debug_print_path(path)
 
 
 if __name__ == "__main__":
