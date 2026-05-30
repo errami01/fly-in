@@ -7,5 +7,5 @@ hub: A 1 1
 hub: B 2 2 [zone=restricted]
 
 connection: start-A
-connection: A-B [max_link_capacity=1]
+connection: A-B [max_link_capacity=2]
 connection: B-end

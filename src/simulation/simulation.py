@@ -95,13 +95,18 @@ class Simulation:
 
             if move is not None:
                 planned_moves.append(move)
-
+        
         return planned_moves
 
     def _plan_drone_move(
         self,
         drone: Drone,
     ) -> PlannedMove | None:
+        # print(
+        #     drone.drone_id,
+        #     drone.in_transit,
+        #     drone.transit_destination,
+        # )
         # Transit completion
         if drone.in_transit:
             destination = drone.transit_destination
@@ -165,16 +170,19 @@ class Simulation:
         reservations: dict[str, int] = {}
         edge_reservations: dict[
             tuple[str, str], int] = {}
+        
         for move in planned_moves:
-            edge_key = move.edge_key()
-            persistent_usage = (
-                self.active_edge_occupancy.get(edge_key,0))
-
+            if move.completes_transit:
+                valid_moves.append(move)
+                continue
             #Check edge capacity
             edge = self.graph.get_edge(
                 move.from_zone,
                 move.to_zone,
             )
+            edge_key = move.edge_key()
+            persistent_usage = (
+                self.active_edge_occupancy.get(edge_key,0))
 
 
             current_edge_usage = (
@@ -359,6 +367,9 @@ class Simulation:
         drone.in_transit = False
 
         drone.transit_destination = None
+        connection = drone.transit_connection
+        if connection is not None:
+            self._release_edge(tuple(sorted(connection)))
         drone.transit_connection = None
 
         self.path_indexes[drone.drone_id] += 1
@@ -392,10 +403,6 @@ class Simulation:
 
         drone.in_transit = False
         drone.transit_destination = None
-
-        connection = drone.transit_connection
-        if connection is not None:
-            self._release_edge(tuple(sorted(connection)))
         drone.transit_connection = None
 
         if destination == self.graph.end:
