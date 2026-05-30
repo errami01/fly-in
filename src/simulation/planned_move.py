@@ -10,3 +10,13 @@ class PlannedMove:
 
     is_restricted: bool = False
     completes_transit: bool = False
+
+    def edge_key(self) -> tuple[str, str]:
+        return tuple(
+            sorted(
+                (
+                    self.from_zone,
+                    self.to_zone,
+                )
+            )
+        )

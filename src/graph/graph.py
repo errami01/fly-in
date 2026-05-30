@@ -33,6 +33,18 @@ class Graph:
         self.nodes[edge.start].neighbors[edge.end] = edge
         self.nodes[edge.end].neighbors[edge.start] = edge
 
-    def get_edge(self, a: str, b: str) -> ConnectionEdge:
-        key = tuple(sorted((a, b)))
-        return self.edges[key]
+    def get_edge(
+            self,
+            start: str,
+            end: str
+            ) -> ConnectionEdge:
+        key = tuple(sorted((start, end)))
+
+        edge = self.edges.get(key)
+
+        if edge is None:
+            raise ValueError(
+                f"Connection not found: {start}-{end}"
+            )
+
+        return edge

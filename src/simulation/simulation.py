@@ -147,11 +147,32 @@ class Simulation:
         valid_moves: list[PlannedMove] = []
 
         reservations: dict[str, int] = {}
-
+        edge_reservations: dict[
+            tuple[str, str], int] = {}
         for move in planned_moves:
-            capacity = self._zone_capacity(
-                move.to_zone
+            #Check edge capacity
+            edge = self.graph.get_edge(
+                move.from_zone,
+                move.to_zone,
             )
+
+            edge_key = move.edge_key()
+
+            current_edge_usage = (
+                edge_reservations.get(
+                    edge_key,
+                    0,
+                )
+            )
+
+            if (
+                current_edge_usage
+                >= edge.max_link_capacity
+            ):
+                continue
+
+            #Check destination capacity
+            capacity = self._zone_capacity(move.to_zone)
 
             effective_occupancy = (
                 occupancy.get(move.to_zone, 0)
@@ -162,13 +183,15 @@ class Simulation:
             if effective_occupancy >= capacity:
                 continue
 
-            reservations.setdefault(
-                move.to_zone,
-                0,
-            )
+            # Reserve edge
+            edge_reservations.setdefault(edge_key, 0)
+            edge_reservations[edge_key] += 1
 
+            #Reserve destination
+            reservations.setdefault(move.to_zone, 0)
             reservations[move.to_zone] += 1
 
+            # Accept move
             valid_moves.append(move)
 
         return valid_moves
