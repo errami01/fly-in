@@ -19,12 +19,28 @@ class Simulation:
         self.path_indexes: dict[int, int] = {
         drone.drone_id: 0 for drone in self.drones
         }
+        self.active_edge_occupancy: dict[
+            tuple[str, str], int] = {}
+
+    def _occupy_edge(self, edge_key: tuple[str, str],) -> None:
+        self.active_edge_occupancy[edge_key] = (
+            self.active_edge_occupancy.get(edge_key, 0) + 1
+            )
+
+    def _release_edge(self, edge_key: tuple[str, str]) -> None:
+        if edge_key not in self.active_edge_occupancy:
+            return
+
+        self.active_edge_occupancy[edge_key] -= 1
+
+        if (self.active_edge_occupancy[edge_key] <= 0):
+            del self.active_edge_occupancy[edge_key]
+
     def run(self) -> None:
         print("\n=== SIMULATION START ===")
 
         while not self._all_delivered():
             self.turn += 1
-
             self._execute_turn()
 
         print("\n=== SIMULATION END ===")
@@ -150,20 +166,20 @@ class Simulation:
         edge_reservations: dict[
             tuple[str, str], int] = {}
         for move in planned_moves:
+            edge_key = move.edge_key()
+            persistent_usage = (
+                self.active_edge_occupancy.get(edge_key,0))
+
             #Check edge capacity
             edge = self.graph.get_edge(
                 move.from_zone,
                 move.to_zone,
             )
 
-            edge_key = move.edge_key()
 
             current_edge_usage = (
-                edge_reservations.get(
-                    edge_key,
-                    0,
-                )
-            )
+                persistent_usage + edge_reservations.get(
+                    edge_key, 0))
 
             if (
                 current_edge_usage
@@ -326,7 +342,7 @@ class Simulation:
             move.from_zone,
             move.to_zone,
         )
-
+        self._occupy_edge(move.edge_key())
         return (
             f"D{drone.drone_id}-"
             f"{move.from_zone}-"
@@ -376,6 +392,10 @@ class Simulation:
 
         drone.in_transit = False
         drone.transit_destination = None
+
+        connection = drone.transit_connection
+        if connection is not None:
+            self._release_edge(tuple(sorted(connection)))
         drone.transit_connection = None
 
         if destination == self.graph.end:
