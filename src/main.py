@@ -53,7 +53,7 @@ def main() -> None:
         )
     simulation.run()
     debug_print_path(path)
-
+    
 
 if __name__ == "__main__":
     main()

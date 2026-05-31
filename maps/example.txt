@@ -1,4 +1,4 @@
-nb_drones: 4
+nb_drones: 6
 
 start_hub: start 0 0
 end_hub: end 10 10
