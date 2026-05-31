@@ -9,11 +9,11 @@ class Simulation:
         self,
         graph: Graph,
         drones: List[Drone],
-        path: List[str],
+        drone_paths: List[str],
     ) -> None:
         self.graph = graph
         self.drones = drones
-        self.path = path
+        self.drone_paths = drone_paths
 
         self.turn = 0
         self.path_indexes: dict[int, int] = {
@@ -102,11 +102,7 @@ class Simulation:
         self,
         drone: Drone,
     ) -> PlannedMove | None:
-        # print(
-        #     drone.drone_id,
-        #     drone.in_transit,
-        #     drone.transit_destination,
-        # )
+
         # Transit completion
         if drone.in_transit:
             destination = drone.transit_destination
@@ -121,15 +117,14 @@ class Simulation:
                 completes_transit=True,
             )
 
-        path_index = self.path_indexes[
-            drone.drone_id
-        ]
+        path = self.drone_paths[drone.drone_id]
+        path_index = self.path_indexes[drone.drone_id]
 
-        if path_index >= len(self.path) - 1:
+        if path_index >= len(path) - 1:
             return None
 
-        current_zone = self.path[path_index]
-        next_zone = self.path[path_index + 1]
+        current_zone = path[path_index]
+        next_zone = path[path_index + 1]
 
         next_node = self.graph.nodes[next_zone]
 

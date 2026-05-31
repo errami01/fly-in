@@ -1,6 +1,7 @@
 from src.exceptions import GraphError
 from src.graph.edge import ConnectionEdge
 from src.graph.node import ZoneNode
+from copy import deepcopy
 
 
 class Graph:
@@ -48,3 +49,6 @@ class Graph:
             )
 
         return edge
+
+    def clone(self):
+        return deepcopy(self)

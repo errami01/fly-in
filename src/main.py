@@ -3,6 +3,7 @@ import sys
 from src.parser.parser import Parser
 from src.utils.graph_debug import debug_print_graph
 from src.graph.pathfinder import Pathfinder
+from src.graph.route_allocator import RouteAllocator
 from src.utils.path_debug import debug_print_path
 from src.simulation.drone import Drone
 from src.simulation.simulation import Simulation
@@ -40,10 +41,15 @@ def main() -> None:
         graph.start,
         graph.end,
     )
+    allocator = RouteAllocator(graph)
+
+    drone_paths = allocator.allocate(
+        drone_count,
+    )
     simulation = Simulation(
         graph=graph,
         drones=drones,
-        path=path,
+        drone_paths=drone_paths,
         )
     simulation.run()
     debug_print_path(path)

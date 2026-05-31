@@ -66,3 +66,79 @@ class Pathfinder:
                 )
 
         return []
+
+    def path_cost(self, path: list[str]) -> float:
+        if len(path) < 2:
+            return 0
+
+        total = 0.0
+
+        for node_name in path[1:]:
+            node = self.graph.nodes[node_name]
+
+            cost = float(node.movement_cost())
+
+            if node.zone_type == ZoneType.PRIORITY:
+                cost -= 0.1
+
+            total += cost
+
+        return total
+
+    def k_shortest_paths(
+            self,
+            start: str,
+            end: str,
+            k: int = 3
+            ) -> list[list[str]]:
+        paths: list[list[str]] = []
+
+        first_path = self.shortest_path(start, end)
+
+        if not first_path:
+            return paths
+
+        paths.append(first_path)
+
+        for _ in range(k - 1):
+            best_candidate = None
+            best_cost = float("inf")
+
+            for existing_path in paths:
+                for i in range(len(existing_path) - 1):
+                    a = existing_path[i]
+                    b = existing_path[i + 1]
+
+                    graph_copy = self.graph.clone()
+
+                    edge_key = tuple(sorted((a, b)))
+
+                    if edge_key not in graph_copy.edges:
+                        continue
+
+                    del graph_copy.edges[edge_key]
+
+                    graph_copy.nodes[a].neighbors.pop(b, None)
+                    graph_copy.nodes[b].neighbors.pop(a, None)
+
+                    candidate = Pathfinder(
+                        graph_copy).shortest_path(start, end)
+
+                    if not candidate:
+                        continue
+
+                    cost = self.path_cost(candidate)
+
+                    if cost < best_cost:
+                        best_candidate = candidate
+                        best_cost = cost
+
+            if (
+                best_candidate is None
+                or best_candidate in paths
+            ):
+                break
+
+            paths.append(best_candidate)
+
+        return paths
