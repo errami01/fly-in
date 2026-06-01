@@ -28,6 +28,7 @@ def main() -> None:
 
     except Exception as error:
         print(f"ERROR: {error}")
+        return
     
     pathfinder = Pathfinder(graph)
     drones = [
@@ -51,7 +52,10 @@ def main() -> None:
         drones=drones,
         drone_paths=drone_paths,
         )
-    simulation.run()
+    try:
+        simulation.run()
+    except Exception as e:
+        print(e)
     debug_print_path(path)
     
 

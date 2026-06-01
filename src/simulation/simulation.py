@@ -14,6 +14,7 @@ class Simulation:
         self.graph = graph
         self.drones = drones
         self.drone_paths = drone_paths
+        self.stalled_turns = 0
 
         self.turn = 0
         self.path_indexes: dict[int, int] = {
@@ -41,7 +42,17 @@ class Simulation:
 
         while not self._all_delivered():
             self.turn += 1
-            self._execute_turn()
+            progress = self._execute_turn()
+            if progress:
+                self.stalled_turns = 0
+            else:
+                self.stalled_turns += 1
+
+            if self.stalled_turns > 5:
+                raise RuntimeError(
+                    "Deadlock detected: "
+                    "no progress for 5 turns"
+                )
 
         print("\n=== SIMULATION END ===")
 
@@ -51,9 +62,9 @@ class Simulation:
             for drone in self.drones
         )
 
-    def _execute_turn(self) -> None:
+    def _execute_turn(self) -> bool:
         movements: list[str] = []
-
+        progress_made = False
         occupancy = self._current_occupancy()
 
         # PHASE 1
@@ -77,12 +88,14 @@ class Simulation:
 
             if movement:
                 movements.append(movement)
+                progress_made = True
 
         if movements:
             print(
                 f"Turn {self.turn}: "
                 + " ".join(movements)
             )
+        return progress_made
 
     def _plan_moves(self) -> list[PlannedMove]:
         planned_moves: list[PlannedMove] = []

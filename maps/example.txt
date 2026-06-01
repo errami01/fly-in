@@ -7,6 +7,6 @@ hub: A 1 1
 hub: B 2 2
 
 connection: start-A
-connection: start-B
-connection: A-end
+connection: A-B 
+#connection: A-end
 connection: B-end
