@@ -8,4 +8,5 @@ class ConnectionEdge:
     max_link_capacity: int = 1
 
     def key(self) -> tuple[str, str]:
-        return tuple(sorted((self.start, self.end)))
+        a, b = sorted([self.start, self.end])
+        return (a, b)

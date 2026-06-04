@@ -8,7 +8,7 @@ def debug_print_path(path: list[str]) -> None:
     print(" -> ".join(path))
 
 
-def print_allocated_paths(paths: dict[int, list[str]]):
+def print_allocated_paths(paths: dict[int, list[str]]) -> None:
     print("\n=== ROUTE ASSIGNMENTS ===")
 
     for drone_id, path in paths.items():
