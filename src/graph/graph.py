@@ -39,9 +39,9 @@ class Graph:
             start: str,
             end: str
             ) -> ConnectionEdge:
-        key = tuple(sorted((start, end)))
+        key1, key2 = tuple(sorted((start, end)))
 
-        edge = self.edges.get(key)
+        edge = self.edges.get((key1, key2))
 
         if edge is None:
             raise ValueError(
@@ -50,5 +50,5 @@ class Graph:
 
         return edge
 
-    def clone(self):
+    def clone(self) -> "Graph":
         return deepcopy(self)

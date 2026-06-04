@@ -313,7 +313,8 @@ class Simulation:
         drone.transit_destination = None
         connection = drone.transit_connection
         if connection is not None:
-            self._release_edge(tuple(sorted(connection)))
+            x, y = sorted(connection)
+            self._release_edge((x, y))
         drone.transit_connection = None
 
         self.path_indexes[drone.drone_id] += 1
