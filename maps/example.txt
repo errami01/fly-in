@@ -1,12 +1,13 @@
-nb_drones: 6
+nb_drones: 2
 
 start_hub: start 0 0
 end_hub: end 10 10
 
-hub: A 1 1
-hub: B 2 2
+hub: A 1 1  [zone=priority color=red max_drones=2]
+hub: B 2 2  [zone=normal color=red max_drones=2]
 
-connection: start-A
-connection: A-B 
-#connection: A-end
-connection: B-end
+connection: start-A [max_link_capacity=2]
+connection: start-B [max_link_capacity=2]
+#connection: A-B 
+connection: A-end [max_link_capacity=2]
+connection: B-end [max_link_capacity=2]

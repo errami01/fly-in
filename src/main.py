@@ -30,29 +30,29 @@ def main() -> None:
         print(f"ERROR: {error}")
         return
     
-    pathfinder = Pathfinder(graph)
-    drones = [
-        Drone(
-            drone_id=i + 1,
-            current_zone=graph.start,
-        )
-        for i in range(drone_count)
-        ]
-    path = pathfinder.shortest_path(
-        graph.start,
-        graph.end,
-    )
-    allocator = RouteAllocator(graph)
-
-    drone_paths = allocator.allocate(
-        drone_count,
-    )
-    simulation = Simulation(
-        graph=graph,
-        drones=drones,
-        drone_paths=drone_paths,
-        )
     try:
+        pathfinder = Pathfinder(graph)
+        drones = [
+            Drone(
+                drone_id=i + 1,
+                current_zone=graph.start,
+            )
+            for i in range(drone_count)
+            ]
+        path = pathfinder.shortest_path(
+            graph.start,
+            graph.end,
+        )
+        allocator = RouteAllocator(graph)
+
+        drone_paths = allocator.allocate(
+            drone_count,
+        )
+        simulation = Simulation(
+            graph=graph,
+            drones=drones,
+            drone_paths=drone_paths,
+            )
         simulation.run()
     except Exception as e:
         print(e)

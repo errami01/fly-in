@@ -116,3 +116,4 @@ coverage.xml
 # Fly-in generated caches
 simulation_cache/
 path_cache/
+example.txt

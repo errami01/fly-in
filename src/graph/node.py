@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-
+from src.graph.edge import ConnectionEdge
 from src.constants import ZoneType
 
 
@@ -11,7 +11,7 @@ class ZoneNode:
     zone_type: ZoneType = ZoneType.NORMAL
     color: str = "none"
     max_drones: int = 1
-    neighbors: dict[str, "ConnectionEdge"] = field(default_factory=dict)
+    neighbors: dict[str, ConnectionEdge] = field(default_factory=dict)
 
     def is_blocked(self) -> bool:
         return self.zone_type == ZoneType.BLOCKED
