@@ -18,8 +18,8 @@ clean:
 	find . -type f -name "*.pyc" -delete
 
 lint:
-# 	flake8 . --exclude=.venv,__pycache__,.mypy_cache
-	mypy . \
+	uv run flake8 . --exclude=.venv,__pycache__,.mypy_cache
+	uv run mypy . \
 		--warn-return-any \
 		--warn-unused-ignores \
 		--ignore-missing-imports \

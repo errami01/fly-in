@@ -4,6 +4,7 @@ from src.simulation.drone import Drone
 from typing import List
 from src.simulation.planned_move import PlannedMove
 
+
 class Simulation:
     def __init__(
         self,
@@ -18,8 +19,8 @@ class Simulation:
 
         self.turn = 0
         self.path_indexes: dict[int, int] = {
-        drone.drone_id: 0 for drone in self.drones
-        }
+            drone.drone_id: 0 for drone in self.drones
+            }
         self.active_edge_occupancy: dict[
             tuple[str, str], int] = {}
 
@@ -108,7 +109,7 @@ class Simulation:
 
             if move is not None:
                 planned_moves.append(move)
-        
+
         return planned_moves
 
     def _plan_drone_move(
@@ -153,8 +154,8 @@ class Simulation:
 
     def _compute_departures(
             self,
-            planned_moves: list[PlannedMove],
-        ) -> dict[str, int]:
+            planned_moves: list[PlannedMove]
+            ) -> dict[str, int]:
         departures: dict[str, int] = {}
 
         for move in planned_moves:
@@ -172,27 +173,25 @@ class Simulation:
             planned_moves: list[PlannedMove],
             occupancy: dict[str, int],
             departures: dict[str, int]
-        ) -> list[PlannedMove]:
+            ) -> list[PlannedMove]:
         valid_moves: list[PlannedMove] = []
 
         reservations: dict[str, int] = {}
         edge_reservations: dict[
             tuple[str, str], int] = {}
-        
+
         for move in planned_moves:
             if move.completes_transit:
                 valid_moves.append(move)
                 continue
-            #Check edge capacity
+            # Check edge capacity
             edge = self.graph.get_edge(
                 move.from_zone,
                 move.to_zone,
             )
             edge_key = move.edge_key()
             persistent_usage = (
-                self.active_edge_occupancy.get(edge_key,0))
-
-
+                self.active_edge_occupancy.get(edge_key, 0))
             current_edge_usage = (
                 persistent_usage + edge_reservations.get(
                     edge_key, 0))
@@ -203,7 +202,7 @@ class Simulation:
             ):
                 continue
 
-            #Check destination capacity
+            # Check destination capacity
             capacity = self._zone_capacity(move.to_zone)
 
             effective_occupancy = (
@@ -219,7 +218,7 @@ class Simulation:
             edge_reservations.setdefault(edge_key, 0)
             edge_reservations[edge_key] += 1
 
-            #Reserve destination
+            # Reserve destination
             reservations.setdefault(move.to_zone, 0)
             reservations[move.to_zone] += 1
 
@@ -230,8 +229,8 @@ class Simulation:
 
     def _execute_move(
             self,
-            move: PlannedMove,
-        ) -> str | None:
+            move: PlannedMove
+            ) -> str | None:
         drone = self._get_drone(move.drone_id)
 
         if move.completes_transit:
@@ -262,6 +261,7 @@ class Simulation:
         raise ValueError(
             f"Drone not found: {drone_id}"
         )
+
     def _move_drone(
         self,
         drone: Drone,
@@ -281,7 +281,7 @@ class Simulation:
         next_zone = self.path[path_index + 1]
 
         next_node = self.graph.nodes[next_zone]
-        
+
         future_occupancy = (
             occupancy.get(next_zone, 0)
             + reservations.get(next_zone, 0)
@@ -314,7 +314,7 @@ class Simulation:
                 f"D{drone.drone_id}-"
                 f"{current_zone}-{next_zone}"
             )
-        
+
         reservations[next_zone] = (reservations.get(next_zone, 0) + 1)
         # Normal movement
         drone.current_zone = next_zone
@@ -329,8 +329,8 @@ class Simulation:
     def _execute_normal_move(
             self,
             drone: Drone,
-            move: PlannedMove,
-        ) -> str:
+            move: PlannedMove
+            ) -> str:
         drone.current_zone = move.to_zone
 
         self.path_indexes[drone.drone_id] += 1
@@ -347,7 +347,7 @@ class Simulation:
             self,
             drone: Drone,
             move: PlannedMove
-        ) -> str:
+            ) -> str:
         drone.in_transit = True
 
         drone.transit_remaining = 1
@@ -368,8 +368,8 @@ class Simulation:
     def _complete_transit(
             self,
             drone: Drone,
-            move: PlannedMove,
-        ) -> str:
+            move: PlannedMove
+            ) -> str:
         drone.current_zone = move.to_zone
 
         drone.in_transit = False
@@ -389,6 +389,7 @@ class Simulation:
             f"D{drone.drone_id}-"
             f"{move.to_zone}"
         )
+
     def _handle_transit(
             self,
             drone: Drone,
@@ -428,7 +429,7 @@ class Simulation:
             return 999999
 
         return self.graph.nodes[zone_name].max_drones
-    
+
     def _current_occupancy(self) -> dict[str, int]:
         occupancy: dict[str, int] = {}
 

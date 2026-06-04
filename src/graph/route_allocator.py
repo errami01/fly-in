@@ -21,9 +21,8 @@ class RouteAllocator:
 
         for drone_id in range(1, drone_count + 1):
             routes = [RouteAssignment(path)for path in paths]
-        
 
-        for drone_id in range(1,drone_count + 1):
+        for drone_id in range(1, drone_count + 1):
             best_route = min(routes, key=self._route_score)
             assignments[drone_id] = (best_route.path)
             best_route.assigned_drones += 1
@@ -73,7 +72,6 @@ class RouteAllocator:
 
 #         for drone_id in range(1, drone_count + 1):
 #             routes = [RouteAssignment(path)for path in paths]
-        
 
 #         for drone_id in range(1,drone_count + 1):
 #             best_route = min(routes, key=self._route_score)

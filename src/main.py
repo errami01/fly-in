@@ -13,7 +13,7 @@ def main() -> None:
     if len(sys.argv) != 2:
         print("Usage: python -m src.main <map_file>")
         sys.exit(1)
-   
+
     file_path = sys.argv[1]
 
     parser = Parser()
@@ -29,7 +29,7 @@ def main() -> None:
     except Exception as error:
         print(f"ERROR: {error}")
         return
-    
+
     try:
         pathfinder = Pathfinder(graph)
         drones = [
@@ -57,7 +57,7 @@ def main() -> None:
     except Exception as e:
         print(e)
     debug_print_path(path)
-    
+
 
 if __name__ == "__main__":
     main()

@@ -6,9 +6,11 @@ from src.graph.graph import Graph
 from src.graph.node import ZoneNode
 from src.parser.validator import parse_metadata, validate_zone_type
 
+
 class Parser:
     NODE_PATTERN = re.compile(
-        r"^(start_hub|end_hub|hub):\s+([^\s]+)\s+(-?\d+)\s+(-?\d+)\s*(\[(.*)\])?$"
+        r"^(start_hub|end_hub|hub):"
+        r"\s+([^\s]+)\s+(-?\d+)\s+(-?\d+)\s*(\[(.*)\])?$"
     )
 
     CONNECTION_PATTERN = re.compile(
