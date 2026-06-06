@@ -7,6 +7,8 @@ from src.graph.route_allocator import RouteAllocator
 from src.utils.path_debug import debug_print_path
 from src.simulation.drone import Drone
 from src.simulation.simulation import Simulation
+from src.visualization.pygame_visualizer import PygameVisualizer
+from src.visualization.replay import ReplayData
 
 
 def main() -> None:
@@ -21,10 +23,10 @@ def main() -> None:
     try:
         drone_count, graph = parser.parse(file_path)
 
-        print("\n=== PARSE SUCCESS ===")
-        print(f"Drones: {drone_count}")
+        # print("\n=== PARSE SUCCESS ===")
+        # print(f"Drones: {drone_count}")
 
-        debug_print_graph(graph)
+        # debug_print_graph(graph)
 
     except Exception as error:
         print(f"ERROR: {error}")
@@ -54,9 +56,18 @@ def main() -> None:
             drone_paths=drone_paths,
             )
         simulation.run()
+        # for turn in simulation.replay_turns:
+        #     print(turn)
+        replay_data = ReplayData(
+            start_zone=graph.start,
+            drone_count=len(simulation.drones),
+            turns=simulation.replay_turns,
+        )
+        visualizer = PygameVisualizer(graph, replay_data)
+        visualizer.run()
     except Exception as e:
         print(e)
-    debug_print_path(path)
+    # debug_print_path(path)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@ from src.graph.graph import Graph
 from src.simulation.drone import Drone
 from typing import List
 from src.simulation.planned_move import PlannedMove
+from src.visualization.replay import  ReplayMove, ReplayTurn
 
 
 class Simulation:
@@ -16,6 +17,7 @@ class Simulation:
         self.drones = drones
         self.drone_paths = drone_paths
         self.stalled_turns = 0
+        self.replay_turns: list[ReplayTurn] = []
 
         self.turn = 0
         self.path_indexes: dict[int, int] = {
@@ -65,6 +67,7 @@ class Simulation:
 
     def _execute_turn(self) -> bool:
         movements: list[str] = []
+        replay_moves: list[ReplayMove] = []
         progress_made = False
         occupancy = self._current_occupancy()
 
@@ -86,11 +89,21 @@ class Simulation:
         # PHASE 4
         for move in valid_moves:
             movement = self._execute_move(move)
-
+            replay_moves.append(
+                ReplayMove(
+                    drone_id=move.drone_id,
+                    destination=move.to_zone,
+                )
+            )
             if movement:
                 movements.append(movement)
                 progress_made = True
-
+        self.replay_turns.append(
+            ReplayTurn(
+                turn_number=self.turn,
+                moves=replay_moves
+                )
+                )
         if movements:
             print(
                 f"Turn {self.turn}: "
