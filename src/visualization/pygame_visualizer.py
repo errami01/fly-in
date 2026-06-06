@@ -78,12 +78,19 @@ class PygameVisualizer:
 
     def draw_nodes(self):
         font = pygame.font.Font(None,24)
+        occupancy = self.calculate_occupancy()
 
         for node in self.graph.nodes.values():
 
             color = COLOR_MAP.get(node.color,(200,200,200))
             position = self.world_to_screen(node.x, node.y)
-
+            count = occupancy[node.name]
+            capacity = node.max_drones
+            occupancy_text = font.render(
+                f"{count}/{capacity}",
+                True,
+                (255,255,255),
+            )
             pygame.draw.circle(
                 self.screen,
                 color,
@@ -97,13 +104,33 @@ class PygameVisualizer:
                 (255,255,255),
             )
 
+            # self.screen.blit(
+            #     label,
+            #     (
+            #         position[0] + 25,
+            #         position[1] - 10,
+            #     ),
+            # )
             self.screen.blit(
-                label,
+                occupancy_text,
                 (
-                    position[0] + 25,
-                    position[1] - 10,
+                    position[0] - 15,
+                    position[1] + 25,
                 ),
             )
+
+    def calculate_occupancy(
+        self,
+    ) -> dict[str, int]:
+        occupancy: dict[str, int] = {}
+
+        for zone_name in self.graph.nodes:
+            occupancy[zone_name] = 0
+
+        for zone_name in self.drone_positions.values():
+            occupancy[zone_name] += 1
+
+        return occupancy
 
     def render_static_map(self):
 
@@ -114,7 +141,13 @@ class PygameVisualizer:
         self.draw_edges()
         self.draw_nodes()
         self.draw_drones()
+        pygame.draw.rect(
+            self.screen,
+            (50, 50, 50),
+            (10, 90, 220, 110),
+        )        
         self.draw_hud()
+        self.draw_controls()
         pygame.display.flip()
 
     def draw_drones(self):
@@ -146,6 +179,7 @@ class PygameVisualizer:
 
             if not advanced:
                 self.playing = False
+
     def draw_hud(self):
 
         font = pygame.font.Font(None,36)
@@ -176,6 +210,35 @@ class PygameVisualizer:
         for drone_id in range(1,self.replay_data.drone_count + 1):
             self.drone_positions[drone_id] = self.replay_data.start_zone
 
+    def draw_controls(self):
+        font = pygame.font.Font(
+            None,
+            28,
+        )
+
+        controls = [
+            "SPACE : Next Turn",
+            "P     : Play/Pause",
+            "R     : Reset",
+        ]
+
+        start_x = 20
+        start_y = 100
+
+        for index, text in enumerate(controls):
+            label = font.render(
+                text,
+                True,
+                (220, 220, 220),
+            )
+
+            self.screen.blit(
+                label,
+                (
+                    start_x,
+                    start_y + index * 30,
+                ),
+            )
     def run(self):
         running = True
 
