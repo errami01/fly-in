@@ -76,6 +76,18 @@ class PygameVisualizer:
                 3,
             )
 
+    def get_zone_capacity(self,zone_name: str) -> str:
+        if zone_name == self.graph.start:
+            return "inf"
+
+        if zone_name == self.graph.end:
+            return "inf"
+
+        return str(
+            self.graph.nodes[
+                zone_name
+            ].max_drones
+        )
     def draw_nodes(self):
         font = pygame.font.Font(None,24)
         occupancy = self.calculate_occupancy()
@@ -85,7 +97,7 @@ class PygameVisualizer:
             color = COLOR_MAP.get(node.color,(200,200,200))
             position = self.world_to_screen(node.x, node.y)
             count = occupancy[node.name]
-            capacity = node.max_drones
+            capacity = self.get_zone_capacity(node.name)
             occupancy_text = font.render(
                 f"{count}/{capacity}",
                 True,
