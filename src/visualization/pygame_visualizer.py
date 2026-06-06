@@ -18,6 +18,9 @@ class PygameVisualizer:
         self.graph = graph
         self.replay_data = replay_data
         self.current_turn_index = 0
+        self.playing = False
+        self.turn_duration = 1000  # ms
+        self.last_turn_time = pygame.time.get_ticks()
         self.drone_positions: dict[int, str] = {}
 
         for drone_id in range(1, replay_data.drone_count + 1):
@@ -111,6 +114,7 @@ class PygameVisualizer:
         self.draw_edges()
         self.draw_nodes()
         self.draw_drones()
+        self.draw_hud()
         pygame.display.flip()
 
     def draw_drones(self):
@@ -125,6 +129,53 @@ class PygameVisualizer:
 
             self.screen.blit(label,(x + 10, y - 10))
 
+    def update_playback(self):
+
+        if not self.playing:
+            return
+
+        now = pygame.time.get_ticks()
+
+        if (
+            now - self.last_turn_time
+            >= self.turn_duration
+        ):
+            advanced = self.apply_turn()
+
+            self.last_turn_time = now
+
+            if not advanced:
+                self.playing = False
+    def draw_hud(self):
+
+        font = pygame.font.Font(None,36)
+
+        label = font.render(
+            f"Turn: {self.current_turn_index}",
+            True,
+            (255,255,255),
+        )
+
+        self.screen.blit(label,(20,20))
+        status = (
+            "PLAYING"
+            if self.playing
+            else "PAUSED"
+        )
+        status_label = font.render(status,True,(255,255,0))
+        self.screen.blit(status_label,(20,60))
+
+    def reset(self):
+
+        self.current_turn_index = 0
+
+        self.playing = False
+
+        self.drone_positions.clear()
+
+        for drone_id in range(1,self.replay_data.drone_count + 1):
+            self.drone_positions[drone_id] = self.replay_data.start_zone
+
     def run(self):
         running = True
 
@@ -136,6 +187,11 @@ class PygameVisualizer:
                 if (event.type == pygame.KEYDOWN):
                     if (event.key == pygame.K_SPACE):
                         self.apply_turn()
+                    elif event.key == pygame.K_p:
+                        self.playing = not self.playing
+                    elif event.key == pygame.K_r:
+                        self.reset()
+            self.update_playback()
             self.render_static_map()
             pygame.display.flip()
             self.clock.tick(60)
