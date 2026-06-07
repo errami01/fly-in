@@ -7,6 +7,9 @@ COLOR_MAP = {
     "green": (0,255,0),
     "blue": (0,0,255),
     "yellow": (255,255,0),
+    "orange": (255, 128,0),
+    "cyan": (0,255,255),
+    "purple": (128,0,128),
 }
 class PygameVisualizer:
 
@@ -22,12 +25,14 @@ class PygameVisualizer:
         self.turn_duration = 1000  # ms
         self.last_turn_time = pygame.time.get_ticks()
         self.drone_positions: dict[int, str] = {}
-
+        self.window_width = 1200
+        # self.window_height = 800
+        self.hud_height = 60
         for drone_id in range(1, replay_data.drone_count + 1):
             self.drone_positions[drone_id] = replay_data.start_zone
 
         pygame.init()
-        self.screen = pygame.display.set_mode((1200, 800))
+        self.screen = pygame.display.set_mode((self.window_width, 800))
         pygame.display.set_caption("Fly-In Replay")
 
         self.clock = pygame.time.Clock()
@@ -35,7 +40,7 @@ class PygameVisualizer:
     def world_to_screen(self,x: float,y: float):
         return (
             100 + x * 80,
-            700 - y * 80,
+            400 - y * 80,
         )
 
     def apply_turn(self):
@@ -51,6 +56,29 @@ class PygameVisualizer:
 
         return True
 
+    def draw_hud_bar(self):
+        pygame.draw.rect(
+            self.screen,
+            (40, 40, 40),
+            (
+                0,
+                0,
+                self.window_width,
+                self.hud_height,
+            ),
+        )
+        font = pygame.font.Font(None,24)
+        status = ("PLAYING" if self.playing else "PAUSED")
+        hud_text = (
+            f"Turn: {self.current_turn_index}"
+            f"   |   {status}"
+            f"   |   SPACE: Next Turn"
+            f"   |   P: Play/Pause"
+            f"   |   R: Reset"
+        )
+        label = font.render(hud_text, True, (255,255,255))
+
+        self.screen.blit(label, (20,25))
     def draw_edges(self):
         for edge in self.graph.edges.values():
 
@@ -153,13 +181,14 @@ class PygameVisualizer:
         self.draw_edges()
         self.draw_nodes()
         self.draw_drones()
-        pygame.draw.rect(
-            self.screen,
-            (50, 50, 50),
-            (10, 90, 220, 110),
-        )        
-        self.draw_hud()
-        self.draw_controls()
+        # pygame.draw.rect(
+        #     self.screen,
+        #     (50, 50, 50),
+        #     (10, 90, 220, 110),
+        # )        
+        # self.draw_hud()
+        # self.draw_controls()
+        self.draw_hud_bar()
         pygame.display.flip()
 
     def draw_drones(self):
@@ -167,8 +196,8 @@ class PygameVisualizer:
         for drone_id, zone_name in (self.drone_positions.items()):
             node = self.graph.nodes[zone_name]
             x, y = self.world_to_screen(node.x,node.y)
-            x += drone_id * 8
-            y -= 25
+            # x += drone_id * 8
+            # y -= 25
             pygame.draw.circle(self.screen,(255,255,255),(x,y),8)
             label = font.render(f"D{drone_id}",True,(255,255,255))
 
@@ -181,10 +210,7 @@ class PygameVisualizer:
 
         now = pygame.time.get_ticks()
 
-        if (
-            now - self.last_turn_time
-            >= self.turn_duration
-        ):
+        if (now - self.last_turn_time >= self.turn_duration):
             advanced = self.apply_turn()
 
             self.last_turn_time = now
@@ -222,35 +248,35 @@ class PygameVisualizer:
         for drone_id in range(1,self.replay_data.drone_count + 1):
             self.drone_positions[drone_id] = self.replay_data.start_zone
 
-    def draw_controls(self):
-        font = pygame.font.Font(
-            None,
-            28,
-        )
+    # def draw_controls(self):
+    #     font = pygame.font.Font(
+    #         None,
+    #         28,
+    #     )
 
-        controls = [
-            "SPACE : Next Turn",
-            "P     : Play/Pause",
-            "R     : Reset",
-        ]
+    #     controls = [
+    #         "SPACE : Next Turn",
+    #         "P     : Play/Pause",
+    #         "R     : Reset",
+    #     ]
 
-        start_x = 20
-        start_y = 100
+    #     start_x = 20
+    #     start_y = 100
 
-        for index, text in enumerate(controls):
-            label = font.render(
-                text,
-                True,
-                (220, 220, 220),
-            )
+    #     for index, text in enumerate(controls):
+    #         label = font.render(
+    #             text,
+    #             True,
+    #             (220, 220, 220),
+    #         )
 
-            self.screen.blit(
-                label,
-                (
-                    start_x,
-                    start_y + index * 30,
-                ),
-            )
+    #         self.screen.blit(
+    #             label,
+    #             (
+    #                 start_x,
+    #                 start_y + index * 30,
+    #             ),
+    #         )
     def run(self):
         running = True
 
