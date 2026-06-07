@@ -7,7 +7,7 @@ COLOR_MAP = {
     "green": (0,255,0),
     "blue": (0,0,255),
     "yellow": (255,255,0),
-    "orange": (255, 128,0),
+    "orange": (255,128,0),
     "cyan": (0,255,255),
     "purple": (128,0,128),
 }
@@ -26,8 +26,33 @@ class PygameVisualizer:
         self.last_turn_time = pygame.time.get_ticks()
         self.drone_positions: dict[int, str] = {}
         self.window_width = 1200
-        # self.window_height = 800
+        self.window_height = 800
         self.hud_height = 60
+        xs = [
+            node.x
+            for node in graph.nodes.values()
+        ]
+
+        # ys = [
+        #     node.y
+        #     for node in graph.nodes.values()
+        # ]
+        self.padding = 100
+        self.max_x = max(xs)
+        # self.max_y = max(ys)
+        # self.scale_x = (
+        #     (self.window_width - 2 * self.padding)
+        #     / max(1, self.max_x)
+        # )
+
+        # self.scale_y = (
+        #     (self.window_height - 200)
+        #     / max(1, self.max_y)
+        # )
+        self.scale = (
+            (self.window_width - 200)
+            / max(1, self.max_x)
+        )
         for drone_id in range(1, replay_data.drone_count + 1):
             self.drone_positions[drone_id] = replay_data.start_zone
 
@@ -39,7 +64,7 @@ class PygameVisualizer:
     
     def world_to_screen(self,x: float,y: float):
         return (
-            100 + x * 80,
+            self.padding + x * self.scale,
             400 - y * 80,
         )
 
@@ -131,12 +156,20 @@ class PygameVisualizer:
                 True,
                 (255,255,255),
             )
-            pygame.draw.circle(
-                self.screen,
-                color,
-                position,
-                20,
-            )
+            try:
+                pygame.draw.circle(
+                    self.screen,
+                    node.color,
+                    position,
+                    20,
+                )
+            except:
+                pygame.draw.circle(
+                    self.screen,
+                    (200,200,200),
+                    position,
+                    20,
+                )
 
             label = font.render(
                 node.name,
