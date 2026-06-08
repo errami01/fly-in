@@ -69,6 +69,10 @@ class Simulation:
         movements: list[str] = []
         replay_moves: list[ReplayMove] = []
         progress_made = False
+        turn_edge_usage: dict[
+            tuple[str, str],
+            int
+        ] = {}
         occupancy = self._current_occupancy()
 
         # PHASE 1
@@ -98,10 +102,19 @@ class Simulation:
             if movement:
                 movements.append(movement)
                 progress_made = True
+                edge_key = move.edge_key()
+
+                turn_edge_usage.setdefault(
+                    edge_key,
+                    0,
+                )
+
+                turn_edge_usage[edge_key] += 1                
         self.replay_turns.append(
             ReplayTurn(
                 turn_number=self.turn,
-                moves=replay_moves
+                moves=replay_moves,
+                edge_usage=turn_edge_usage
                 )
                 )
         if movements:
@@ -311,7 +324,7 @@ class Simulation:
         return (
             f"D{drone.drone_id}-"
             f"{move.from_zone}-"
-            f"{move.to_zone}"
+            f"{move.to_zone} "
         )
 
     def _complete_transit(

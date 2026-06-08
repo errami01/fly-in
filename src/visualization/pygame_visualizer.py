@@ -2,22 +2,24 @@ import os
 os.environ["SDL_AUDIODRIVER"] = "dummy"
 import pygame
 
-COLOR_MAP = {
-    "red": (255,0,0),
-    "green": (0,255,0),
-    "blue": (0,0,255),
-    "yellow": (255,255,0),
-    "orange": (255,128,0),
-    "cyan": (0,255,255),
-    "purple": (128,0,128),
-}
+# COLOR_MAP = {
+#     "red": (255,0,0),
+#     "green": (0,255,0),
+#     "blue": (0,0,255),
+#     "yellow": (255,255,0),
+#     "orange": (255,128,0),
+#     "cyan": (0,255,255),
+#     "purple": (128,0,128),
+# }
 class PygameVisualizer:
 
     def __init__(
         self,
+        simulation,
         graph,
         replay_data,
     ):
+        self.simulation = simulation
         self.graph = graph
         self.replay_data = replay_data
         self.current_turn_index = 0
@@ -33,22 +35,8 @@ class PygameVisualizer:
             for node in graph.nodes.values()
         ]
 
-        # ys = [
-        #     node.y
-        #     for node in graph.nodes.values()
-        # ]
         self.padding = 100
         self.max_x = max(xs)
-        # self.max_y = max(ys)
-        # self.scale_x = (
-        #     (self.window_width - 2 * self.padding)
-        #     / max(1, self.max_x)
-        # )
-
-        # self.scale_y = (
-        #     (self.window_height - 200)
-        #     / max(1, self.max_y)
-        # )
         self.scale = (
             (self.window_width - 200)
             / max(1, self.max_x)
@@ -57,7 +45,8 @@ class PygameVisualizer:
             self.drone_positions[drone_id] = replay_data.start_zone
 
         pygame.init()
-        self.screen = pygame.display.set_mode((self.window_width, 800))
+        self.screen = pygame.display.set_mode(
+            (self.window_width, self.window_height))
         pygame.display.set_caption("Fly-In Replay")
 
         self.clock = pygame.time.Clock()
@@ -102,52 +91,58 @@ class PygameVisualizer:
             f"   |   R: Reset"
         )
         label = font.render(hud_text, True, (255,255,255))
-
         self.screen.blit(label, (20,25))
+
     def draw_edges(self):
+        # occupancy = self.calculate_edge_occupancy()
+        edge_usage = self.current_edge_usage()
+        # print(edge_usage)
         for edge in self.graph.edges.values():
-
-            node_a = self.graph.nodes[
-                edge.start
-            ]
-
-            node_b = self.graph.nodes[
-                edge.end
-            ]
-
+            node_a = self.graph.nodes[edge.start]
+            node_b = self.graph.nodes[edge.end]
+            start_pos = self.world_to_screen(node_a.x, node_a.y)
+            end_pos = self.world_to_screen(node_b.x, node_b.y)
+            edge_key = edge.key()
+            occupancy = edge_usage.get(edge_key,0)
+            capacity = (edge.max_link_capacity)
             pygame.draw.line(
                 self.screen,
                 (150,150,150),
-                self.world_to_screen(
-                    node_a.x,
-                    node_a.y,
-                ),
-                self.world_to_screen(
-                    node_b.x,
-                    node_b.y,
-                ),
+                self.world_to_screen(node_a.x, node_a.y),
+                self.world_to_screen(node_b.x, node_b.y),
                 3,
             )
+            mid_x = (start_pos[0] + end_pos[0]) / 2
+            mid_y = (start_pos[1] + end_pos[1]) / 2
+            font = pygame.font.Font(None,24)
+
+            label = font.render(
+                f"{occupancy}/{capacity}",
+                True,
+                (255,255,255),
+            )
+            self.screen.blit(label,(mid_x,mid_y))
+
+    def current_edge_usage(self) -> dict[tuple[str, str], int]:
+        if (self.current_turn_index == 0):
+            return {}
+        turn = self.replay_data.turns[self.current_turn_index - 1]
+        return turn.edge_usage
 
     def get_zone_capacity(self,zone_name: str) -> str:
         if zone_name == self.graph.start:
             return "inf"
-
         if zone_name == self.graph.end:
             return "inf"
+        return str(self.graph.nodes[zone_name].max_drones)
 
-        return str(
-            self.graph.nodes[
-                zone_name
-            ].max_drones
-        )
     def draw_nodes(self):
         font = pygame.font.Font(None,24)
         occupancy = self.calculate_occupancy()
 
         for node in self.graph.nodes.values():
 
-            color = COLOR_MAP.get(node.color,(200,200,200))
+            # color = COLOR_MAP.get(node.color,(200,200,200))
             position = self.world_to_screen(node.x, node.y)
             count = occupancy[node.name]
             capacity = self.get_zone_capacity(node.name)
@@ -176,7 +171,7 @@ class PygameVisualizer:
                 True,
                 (255,255,255),
             )
-
+            #Display node names
             # self.screen.blit(
             #     label,
             #     (
@@ -205,6 +200,17 @@ class PygameVisualizer:
 
         return occupancy
 
+    def calculate_edge_occupancy(
+        self,
+    ) -> dict[tuple[str, str], int]:
+        occupancy = {}
+
+        for edge_key, count in (
+            self.simulation.active_edge_occupancy.items()
+        ):
+            occupancy[edge_key] = count
+
+        return occupancy
     def render_static_map(self):
 
         self.screen.fill(

@@ -11,7 +11,10 @@ class ReplayMove:
 class ReplayTurn:
     turn_number: int
     moves: list[ReplayMove]
-
+    edge_usage: dict[
+        tuple[str, str],
+        int
+    ]
 
 @dataclass(slots=True)
 class ReplayData:
