@@ -94,17 +94,10 @@ class PygameVisualizer:
         self.screen.blit(label, (20,25))
 
     def draw_edges(self):
-        # occupancy = self.calculate_edge_occupancy()
         edge_usage = self.current_edge_usage()
-        # print(edge_usage)
         for edge in self.graph.edges.values():
             node_a = self.graph.nodes[edge.start]
             node_b = self.graph.nodes[edge.end]
-            start_pos = self.world_to_screen(node_a.x, node_a.y)
-            end_pos = self.world_to_screen(node_b.x, node_b.y)
-            edge_key = edge.key()
-            occupancy = edge_usage.get(edge_key,0)
-            capacity = (edge.max_link_capacity)
             pygame.draw.line(
                 self.screen,
                 (150,150,150),
@@ -112,16 +105,22 @@ class PygameVisualizer:
                 self.world_to_screen(node_b.x, node_b.y),
                 3,
             )
-            mid_x = (start_pos[0] + end_pos[0]) / 2
-            mid_y = (start_pos[1] + end_pos[1]) / 2
-            font = pygame.font.Font(None,24)
+        # Visualize edge occupancy-capacity
+            # start_pos = self.world_to_screen(node_a.x, node_a.y)
+            # end_pos = self.world_to_screen(node_b.x, node_b.y)
+            # edge_key = edge.key()
+            # occupancy = edge_usage.get(edge_key,0)
+            # capacity = (edge.max_link_capacity)
+            # mid_x = (start_pos[0] + end_pos[0]) / 2
+            # mid_y = (start_pos[1] + end_pos[1]) / 2
+            # font = pygame.font.Font(None,24)
 
-            label = font.render(
-                f"{occupancy}/{capacity}",
-                True,
-                (255,255,255),
-            )
-            self.screen.blit(label,(mid_x,mid_y))
+            # label = font.render(
+            #     f"{occupancy}/{capacity}",
+            #     True,
+            #     (255,255,255),
+            # )
+            # self.screen.blit(label,(mid_x,mid_y))
 
     def current_edge_usage(self) -> dict[tuple[str, str], int]:
         if (self.current_turn_index == 0):
@@ -144,13 +143,7 @@ class PygameVisualizer:
 
             # color = COLOR_MAP.get(node.color,(200,200,200))
             position = self.world_to_screen(node.x, node.y)
-            count = occupancy[node.name]
-            capacity = self.get_zone_capacity(node.name)
-            occupancy_text = font.render(
-                f"{count}/{capacity}",
-                True,
-                (255,255,255),
-            )
+           
             try:
                 pygame.draw.circle(
                     self.screen,
@@ -166,12 +159,12 @@ class PygameVisualizer:
                     20,
                 )
 
-            label = font.render(
-                node.name,
-                True,
-                (255,255,255),
-            )
             #Display node names
+            # label = font.render(
+            #     node.name,
+            #     True,
+            #     (255,255,255),
+            # )
             # self.screen.blit(
             #     label,
             #     (
@@ -179,13 +172,21 @@ class PygameVisualizer:
             #         position[1] - 10,
             #     ),
             # )
-            self.screen.blit(
-                occupancy_text,
-                (
-                    position[0] - 15,
-                    position[1] + 25,
-                ),
-            )
+        #Display node occupancy-capacity
+            # count = occupancy[node.name]
+            # capacity = self.get_zone_capacity(node.name)
+            # occupancy_text = font.render(
+            #     f"{count}/{capacity}",
+            #     True,
+            #     (255,255,255),
+            # )
+            # self.screen.blit(
+            #     occupancy_text,
+            #     (
+            #         position[0] - 15,
+            #         position[1] + 25,
+            #     ),
+            # )
 
     def calculate_occupancy(
         self,

@@ -1,5 +1,5 @@
 import sys
-
+import argparse
 from src.parser.parser import Parser
 from src.utils.graph_debug import debug_print_graph
 from src.graph.pathfinder import Pathfinder
@@ -12,16 +12,22 @@ from src.visualization.replay import ReplayData
 
 
 def main() -> None:
-    if len(sys.argv) != 2:
+    arg_parser = argparse.ArgumentParser(description="A simple CLI tool.")
+    arg_parser.add_argument(
+        "file_path",
+        type=str, help="The mandatory path to the map file")
+    arg_parser.add_argument(
+        "-v", "--visual",
+        action="store_true", help="Visualize simulation")
+    try:
+        args = arg_parser.parse_args()
+    except:
         print("Usage: python -m src.main <map_file>")
         sys.exit(1)
-
-    file_path = sys.argv[1]
-
     parser = Parser()
 
     try:
-        drone_count, graph = parser.parse(file_path)
+        drone_count, graph = parser.parse(args.file_path)
 
         # print("\n=== PARSE SUCCESS ===")
         # print(f"Drones: {drone_count}")
@@ -57,15 +63,14 @@ def main() -> None:
             )
 
         simulation.run()
-        # for turn in simulation.replay_turns:
-        #     print(turn)
-        replay_data = ReplayData(
-            start_zone=graph.start,
-            drone_count=len(simulation.drones),
-            turns=simulation.replay_turns,
-        )
-        visualizer = PygameVisualizer(simulation, graph, replay_data)
-        visualizer.run()
+        if args.visual:
+            replay_data = ReplayData(
+                start_zone=graph.start,
+                drone_count=len(simulation.drones),
+                turns=simulation.replay_turns,
+            )
+            visualizer = PygameVisualizer(simulation, graph, replay_data)
+            visualizer.run()
     except Exception as e:
         print(e)
     # debug_print_path(path)
