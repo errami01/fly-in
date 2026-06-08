@@ -16,6 +16,7 @@ class ReplayTurn:
         int
     ]
 
+
 @dataclass(slots=True)
 class ReplayData:
     start_zone: str

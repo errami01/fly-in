@@ -3,7 +3,7 @@ from src.graph.graph import Graph
 from src.simulation.drone import Drone
 from typing import List
 from src.simulation.planned_move import PlannedMove
-from src.visualization.replay import  ReplayMove, ReplayTurn
+from src.visualization.replay import ReplayMove, ReplayTurn
 
 
 class Simulation:
@@ -109,7 +109,7 @@ class Simulation:
                     0,
                 )
 
-                turn_edge_usage[edge_key] += 1                
+                turn_edge_usage[edge_key] += 1
         self.replay_turns.append(
             ReplayTurn(
                 turn_number=self.turn,

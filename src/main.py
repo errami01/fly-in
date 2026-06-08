@@ -1,10 +1,10 @@
 import sys
 import argparse
 from src.parser.parser import Parser
-from src.utils.graph_debug import debug_print_graph
-from src.graph.pathfinder import Pathfinder
+# from src.utils.graph_debug import debug_print_graph
+# from src.graph.pathfinder import Pathfinder
 from src.graph.route_allocator import RouteAllocator
-from src.utils.path_debug import debug_print_path
+# from src.utils.path_debug import debug_print_path
 from src.simulation.drone import Drone
 from src.simulation.simulation import Simulation
 from src.visualization.pygame_visualizer import PygameVisualizer
@@ -21,7 +21,7 @@ def main() -> None:
         action="store_true", help="Visualize simulation")
     try:
         args = arg_parser.parse_args()
-    except:
+    except Exception:
         print("Usage: python -m src.main <map_file>")
         sys.exit(1)
     parser = Parser()
@@ -39,7 +39,7 @@ def main() -> None:
         return
 
     try:
-        pathfinder = Pathfinder(graph)
+        # pathfinder = Pathfinder(graph)
         drones = [
             Drone(
                 drone_id=i + 1,
@@ -47,10 +47,10 @@ def main() -> None:
             )
             for i in range(drone_count)
             ]
-        path = pathfinder.shortest_path(
-            graph.start,
-            graph.end,
-        )
+        # path = pathfinder.shortest_path(
+        #     graph.start,
+        #     graph.end,
+        # )
         allocator = RouteAllocator(graph)
 
         drone_paths = allocator.allocate(
