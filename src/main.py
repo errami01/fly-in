@@ -69,7 +69,7 @@ def main() -> None:
                 drone_count=len(simulation.drones),
                 turns=simulation.replay_turns,
             )
-            visualizer = PygameVisualizer(simulation, graph, replay_data)
+            visualizer = PygameVisualizer(graph, replay_data)
             visualizer.run()
     except Exception as e:
         print(e)

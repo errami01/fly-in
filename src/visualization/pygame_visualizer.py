@@ -1,5 +1,7 @@
 import os
 import pygame
+from typing import Tuple
+
 
 
 os.environ["SDL_AUDIODRIVER"] = "dummy"
@@ -17,13 +19,7 @@ os.environ["SDL_AUDIODRIVER"] = "dummy"
 
 class PygameVisualizer:
 
-    def __init__(
-        self,
-        simulation,
-        graph,
-        replay_data,
-    ):
-        self.simulation = simulation
+    def __init__(self, graph, replay_data) -> None:
         self.graph = graph
         self.replay_data = replay_data
         self.current_turn_index = 0
@@ -34,34 +30,22 @@ class PygameVisualizer:
         self.window_width = 1200
         self.window_height = 800
         self.hud_height = 60
-        xs = [
-            node.x
-            for node in graph.nodes.values()
-        ]
-
+        xs = [node.x for node in graph.nodes.values()]
         self.padding = 100
         self.max_x = max(xs)
-        self.scale = (
-            (self.window_width - 200)
-            / max(1, self.max_x)
-        )
+        self.scale = ((self.window_width - 200) / max(1, self.max_x))
         for drone_id in range(1, replay_data.drone_count + 1):
             self.drone_positions[drone_id] = replay_data.start_zone
-
         pygame.init()
         self.screen = pygame.display.set_mode(
             (self.window_width, self.window_height))
         pygame.display.set_caption("Fly-In Replay")
-
         self.clock = pygame.time.Clock()
 
-    def world_to_screen(self, x: float, y: float):
-        return (
-            self.padding + x * self.scale,
-            400 - y * 80,
-        )
+    def world_to_screen(self, x: float, y: float) -> Tuple[float, float]:
+        return (self.padding + x * self.scale, 400 - y * 80)
 
-    def apply_turn(self):
+    def apply_turn(self) -> bool:
         if (self.current_turn_index >= len(self.replay_data.turns)):
             return False
         turn = self.replay_data.turns[self.current_turn_index]
@@ -70,7 +54,7 @@ class PygameVisualizer:
         self.current_turn_index += 1
         return True
 
-    def draw_hud_bar(self):
+    def draw_hud_bar(self) -> None:
         pygame.draw.rect(
             self.screen,
             (40, 40, 40),
@@ -93,7 +77,7 @@ class PygameVisualizer:
         label = font.render(hud_text, True, (255, 255, 255))
         self.screen.blit(label, (20, 25))
 
-    def draw_edges(self):
+    def draw_edges(self) -> None:
         # For edge visualization
         # edge_usage = self.current_edge_usage()
         for edge in self.graph.edges.values():
@@ -136,7 +120,7 @@ class PygameVisualizer:
             return "inf"
         return str(self.graph.nodes[zone_name].max_drones)
 
-    def draw_nodes(self):
+    def draw_nodes(self) -> None:
         # font = pygame.font.Font(None, 24)
         # occupancy = self.calculate_occupancy()
 
@@ -189,9 +173,7 @@ class PygameVisualizer:
             #     ),
             # )
 
-    def calculate_occupancy(
-        self,
-    ) -> dict[str, int]:
+    def calculate_occupancy(self) -> dict[str, int]:
         occupancy: dict[str, int] = {}
 
         for zone_name in self.graph.nodes:
@@ -202,19 +184,7 @@ class PygameVisualizer:
 
         return occupancy
 
-    def calculate_edge_occupancy(
-        self,
-    ) -> dict[tuple[str, str], int]:
-        occupancy = {}
-
-        for edge_key, count in (
-            self.simulation.active_edge_occupancy.items()
-        ):
-            occupancy[edge_key] = count
-
-        return occupancy
-
-    def render_static_map(self):
+    def render_static_map(self) -> None:
         self.screen.fill((30, 30, 30))
         self.draw_edges()
         self.draw_nodes()
@@ -222,7 +192,7 @@ class PygameVisualizer:
         self.draw_hud_bar()
         pygame.display.flip()
 
-    def draw_drones(self):
+    def draw_drones(self) -> None:
         font = pygame.font.Font(None, 20)
         for drone_id, zone_name in (self.drone_positions.items()):
             node = self.graph.nodes[zone_name]
@@ -234,7 +204,7 @@ class PygameVisualizer:
 
             self.screen.blit(label, (x + 10, y - 10))
 
-    def update_playback(self):
+    def update_playback(self) -> None:
         if not self.playing:
             return
         now = pygame.time.get_ticks()
@@ -244,7 +214,7 @@ class PygameVisualizer:
             if not advanced:
                 self.playing = False
 
-    def draw_hud(self):
+    def draw_hud(self) -> None:
         font = pygame.font.Font(None, 36)
         label = font.render(
             f"Turn: {self.current_turn_index}",
@@ -261,14 +231,10 @@ class PygameVisualizer:
         status_label = font.render(status, True, (255, 255, 0))
         self.screen.blit(status_label, (20, 60))
 
-    def reset(self):
-
+    def reset(self) -> None:
         self.current_turn_index = 0
-
         self.playing = False
-
         self.drone_positions.clear()
-
         for drone_id in range(1, self.replay_data.drone_count + 1):
             self.drone_positions[drone_id] = self.replay_data.start_zone
 
@@ -301,11 +267,9 @@ class PygameVisualizer:
     #                 start_y + index * 30,
     #             ),
     #         )
-    def run(self):
+    def run(self) -> None:
         running = True
-
         while running:
-
             for event in pygame.event.get():
                 if (event.type == pygame.QUIT):
                     running = False
@@ -320,7 +284,6 @@ class PygameVisualizer:
             self.render_static_map()
             pygame.display.flip()
             self.clock.tick(60)
-
         pygame.quit()
     # def run(self):
     #     print("Starting visualizer...")

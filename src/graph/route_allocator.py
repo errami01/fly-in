@@ -3,7 +3,7 @@ from src.graph.route_assignment import RouteAssignment
 
 
 class RouteAllocator:
-    def __init__(self, graph):
+    def __init__(self, graph) -> None:
         self.graph = graph
         self.pathfinder = Pathfinder(graph)
 
