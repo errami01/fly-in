@@ -1,7 +1,8 @@
 import os
 import pygame
 from typing import Tuple
-
+from src.graph.graph import Graph
+from src.visualization.replay import ReplayData
 
 
 os.environ["SDL_AUDIODRIVER"] = "dummy"
@@ -19,7 +20,7 @@ os.environ["SDL_AUDIODRIVER"] = "dummy"
 
 class PygameVisualizer:
 
-    def __init__(self, graph, replay_data) -> None:
+    def __init__(self, graph: Graph, replay_data: ReplayData) -> None:
         self.graph = graph
         self.replay_data = replay_data
         self.current_turn_index = 0

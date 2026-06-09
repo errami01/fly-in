@@ -9,6 +9,7 @@ from src.simulation.drone import Drone
 from src.simulation.simulation import Simulation
 from src.visualization.pygame_visualizer import PygameVisualizer
 from src.visualization.replay import ReplayData
+from typing import cast
 
 
 def main() -> None:
@@ -40,10 +41,11 @@ def main() -> None:
 
     try:
         # pathfinder = Pathfinder(graph)
+
         drones = [
             Drone(
                 drone_id=i + 1,
-                current_zone=graph.start,
+                current_zone=cast(str, graph.start),
             )
             for i in range(drone_count)
             ]
@@ -53,9 +55,7 @@ def main() -> None:
         # )
         allocator = RouteAllocator(graph)
 
-        drone_paths = allocator.allocate(
-            drone_count,
-        )
+        drone_paths = allocator.allocate(drone_count)
         simulation = Simulation(
             graph=graph,
             drones=drones,
@@ -65,7 +65,7 @@ def main() -> None:
         simulation.run()
         if args.visual:
             replay_data = ReplayData(
-                start_zone=graph.start,
+                start_zone=cast(str, graph.start),
                 drone_count=len(simulation.drones),
                 turns=simulation.replay_turns,
             )

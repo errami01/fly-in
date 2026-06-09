@@ -1,23 +1,27 @@
 from src.graph.pathfinder import Pathfinder
 from src.graph.route_assignment import RouteAssignment
+from src.graph.graph import Graph
+from typing import Dict, List
 
 
 class RouteAllocator:
-    def __init__(self, graph) -> None:
+    def __init__(self, graph: Graph) -> None:
         self.graph = graph
         self.pathfinder = Pathfinder(graph)
 
-    def allocate(self, drone_count: int) -> dict[int, list[str]]:
+    def allocate(self, drone_count: int) -> Dict[int, List[str]]:
+        assert self.graph.start is not None, "Graph start node is missing!"
+        assert self.graph.end is not None, "Graph end node is missing!"
         paths = self.pathfinder.k_shortest_paths(
-            self.graph.start,
-            self.graph.end,
+            start=self.graph.start,
+            end=self.graph.end,
             k=3
             )
 
         if not paths:
             raise ValueError("No valid path found")
 
-        assignments: dict[int, list[str]] = {}
+        assignments: Dict[int, List[str]] = {}
 
         for drone_id in range(1, drone_count + 1):
             routes = [RouteAssignment(path)for path in paths]

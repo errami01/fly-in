@@ -1,7 +1,7 @@
 from src.constants import ZoneType
 from src.graph.graph import Graph
 from src.simulation.drone import Drone
-from typing import List
+from typing import List, Dict, Tuple
 from src.simulation.planned_move import PlannedMove
 from src.visualization.replay import ReplayMove, ReplayTurn
 
@@ -11,27 +11,26 @@ class Simulation:
         self,
         graph: Graph,
         drones: List[Drone],
-        drone_paths: List[str],
+        drone_paths: Dict[int, List[str]],
     ) -> None:
         self.graph = graph
         self.drones = drones
         self.drone_paths = drone_paths
         self.stalled_turns = 0
-        self.replay_turns: list[ReplayTurn] = []
-
+        self.replay_turns: List[ReplayTurn] = []
         self.turn = 0
-        self.path_indexes: dict[int, int] = {
+        self.path_indexes: Dict[int, int] = {
             drone.drone_id: 0 for drone in self.drones
             }
-        self.active_edge_occupancy: dict[
-            tuple[str, str], int] = {}
+        self.active_edge_occupancy: Dict[
+            Tuple[str, str], int] = {}
 
-    def _occupy_edge(self, edge_key: tuple[str, str],) -> None:
+    def _occupy_edge(self, edge_key: Tuple[str, str],) -> None:
         self.active_edge_occupancy[edge_key] = (
             self.active_edge_occupancy.get(edge_key, 0) + 1
             )
 
-    def _release_edge(self, edge_key: tuple[str, str]) -> None:
+    def _release_edge(self, edge_key: Tuple[str, str]) -> None:
         if edge_key not in self.active_edge_occupancy:
             return
 
@@ -66,22 +65,15 @@ class Simulation:
         )
 
     def _execute_turn(self) -> bool:
-        movements: list[str] = []
-        replay_moves: list[ReplayMove] = []
+        movements: List[str] = []
+        replay_moves: List[ReplayMove] = []
         progress_made = False
-        turn_edge_usage: dict[
-            tuple[str, str],
-            int
-        ] = {}
+        turn_edge_usage: Dict[Tuple[str, str], int] = {}
         occupancy = self._current_occupancy()
-
         # PHASE 1
         planned_moves = self._plan_moves()
-
         # PHASE 2
-        departures = self._compute_departures(
-            planned_moves
-        )
+        departures = self._compute_departures(planned_moves)
 
         # PHASE 3
         valid_moves = self._validate_moves(
@@ -103,12 +95,7 @@ class Simulation:
                 movements.append(movement)
                 progress_made = True
                 edge_key = move.edge_key()
-
-                turn_edge_usage.setdefault(
-                    edge_key,
-                    0,
-                )
-
+                turn_edge_usage.setdefault(edge_key, 0)
                 turn_edge_usage[edge_key] += 1
         self.replay_turns.append(
             ReplayTurn(
@@ -124,8 +111,8 @@ class Simulation:
             )
         return progress_made
 
-    def _plan_moves(self) -> list[PlannedMove]:
-        planned_moves: list[PlannedMove] = []
+    def _plan_moves(self) -> List[PlannedMove]:
+        planned_moves: List[PlannedMove] = []
 
         for drone in self.drones:
             if drone.delivered:
@@ -181,30 +168,24 @@ class Simulation:
     def _compute_departures(
             self,
             planned_moves: list[PlannedMove]
-            ) -> dict[str, int]:
-        departures: dict[str, int] = {}
-
+            ) -> Dict[str, int]:
+        departures: Dict[str, int] = {}
         for move in planned_moves:
-            departures.setdefault(
-                move.from_zone,
-                0,
-            )
-
+            departures.setdefault(move.from_zone, 0)
             departures[move.from_zone] += 1
-
         return departures
 
     def _validate_moves(
             self,
-            planned_moves: list[PlannedMove],
-            occupancy: dict[str, int],
-            departures: dict[str, int]
-            ) -> list[PlannedMove]:
-        valid_moves: list[PlannedMove] = []
+            planned_moves: List[PlannedMove],
+            occupancy: Dict[str, int],
+            departures: Dict[str, int]
+            ) -> List[PlannedMove]:
+        valid_moves: List[PlannedMove] = []
 
-        reservations: dict[str, int] = {}
-        edge_reservations: dict[
-            tuple[str, str], int] = {}
+        reservations: Dict[str, int] = {}
+        edge_reservations: Dict[
+            Tuple[str, str], int] = {}
 
         for move in planned_moves:
             if move.completes_transit:
