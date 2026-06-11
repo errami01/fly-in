@@ -2,6 +2,7 @@
 
 MAIN := src.main
 MAP := ?
+
 install:
 	uv sync
 
@@ -27,5 +28,5 @@ lint:
 		--check-untyped-defs
 
 lint-strict:
-	uv run flake8 .
+	uv run flake8 . --exclude=.venv,__pycache__,.mypy_cache
 	uv run mypy . --strict

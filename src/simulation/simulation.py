@@ -12,7 +12,9 @@ class Simulation:
         graph: Graph,
         drones: List[Drone],
         drone_paths: Dict[int, List[str]],
+        cap: bool = False
     ) -> None:
+        self.cap = cap
         self.graph = graph
         self.drones = drones
         self.drone_paths = drone_paths
@@ -91,12 +93,27 @@ class Simulation:
                     destination=move.to_zone,
                 )
             )
+
             if movement:
-                movements.append(movement)
                 progress_made = True
                 edge_key = move.edge_key()
                 turn_edge_usage.setdefault(edge_key, 0)
                 turn_edge_usage[edge_key] += 1
+                if self.cap:
+                    movement += f" [Zone {move.from_zone}: "
+                    movement += f"{occupancy[move.from_zone]} / "
+                    movement += f"{self._zone_capacity(move.from_zone)}]"
+                    to_zone_occupency = 0
+                    if move.to_zone in occupancy.keys():
+                        to_zone_occupency = occupancy[move.to_zone]
+                    movement += f" [Zone {move.to_zone}: {to_zone_occupency}"
+                    movement += f" / {self._zone_capacity(move.to_zone)}]"
+                    movement += f" [Connection {edge_key[1]}-{edge_key[0]}: "
+                    movement += f"{turn_edge_usage[edge_key]} / "
+                    edges = self.graph.edges
+                    movement += f"{edges[edge_key].max_link_capacity}]"
+                movements.append(movement)
+                # print(movement)
         self.replay_turns.append(
             ReplayTurn(
                 turn_number=self.turn,
@@ -109,6 +126,7 @@ class Simulation:
                 f"Turn {self.turn}: "
                 + " ".join(movements)
             )
+            # self._print_turn_stats(occupancy, turn_edge_usage)
         return progress_made
 
     def _plan_moves(self) -> List[PlannedMove]:
@@ -377,17 +395,13 @@ class Simulation:
     def _current_occupancy(self) -> dict[str, int]:
         occupancy: dict[str, int] = {}
 
+        for node_name in self.graph.nodes:
+            occupancy[node_name] = 0
+
         for drone in self.drones:
-            if drone.delivered:
+            if drone.delivered and self.graph.end:
+                occupancy[self.graph.end] += 1
                 continue
-
-            if drone.in_transit:
-                continue
-
-            occupancy.setdefault(
-                drone.current_zone,
-                0,
-            )
 
             occupancy[drone.current_zone] += 1
 
